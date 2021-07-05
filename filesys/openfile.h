@@ -29,6 +29,7 @@
 class OpenFile {
   public:
     int openType;
+    char* name;
     /* 
          openType:
         - 0: read and write
@@ -36,7 +37,7 @@ class OpenFile {
     */
     OpenFile(int f) { file = f; currentOffset = 0; openType = -1;}	// open the file
     //Overload constructor
-    OpenFile(int f, int type) { file = f; currentOffset = 0; openType = type;}
+    OpenFile(int f, int type, char* filename) { file = f; currentOffset = 0; openType = type; name = filename;}
     //Overlaod constructor
     OpenFile() {
         file = -1;
@@ -97,6 +98,7 @@ class FileHeader;
 class OpenFile {
   public:
     int openType;
+    char* name;
     /* 
         openType:
         - 0: read and write

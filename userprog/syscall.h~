@@ -98,7 +98,7 @@ int CreateFile(char *name);
 OpenFileId Open(char *name, int type);
 
 /* Write "size" bytes from "buffer" to the open file. */
-void Write(char *buffer, int size, OpenFileId id);
+int Write(char *buffer, int size, OpenFileId id);
 
 /* Read "size" bytes from the open file into "buffer".  
  * Return the number of bytes actually read -- if the open file isn't
@@ -110,7 +110,7 @@ int Read(char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileId id);
-int Seek(int pos);
+int Seek(int pos, int openFileID);
 int Delete(char* name);
 
 /* User-level thread operations: Fork and Yield.  To allow multiple

@@ -81,7 +81,7 @@ class FileSystem {
 	OpenFile* Open(char *name, int type) {
 	  int fileDescriptor = OpenForReadWrite(name, FALSE);
 	  if (fileDescriptor == -1) return NULL;
-	  return new OpenFile(fileDescriptor, type);
+	  return new OpenFile(fileDescriptor, type, name);
    }
 
    bool Remove(char *name) { return Unlink(name) == 0; }

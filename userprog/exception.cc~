@@ -181,7 +181,7 @@ ExceptionHandler(ExceptionType which)
 				return;
 	
 			case SyscallException: {
-				printf("\n");
+				//printf("\n");
 				switch (type) {
 					case SC_Halt: {
 						DEBUG('a', "\n Shutdown, initiated by user program.");
@@ -216,6 +216,15 @@ ExceptionHandler(ExceptionType which)
 							delete filename;
 							return;
 						}
+
+						if (filename[0] == '\0') {
+							printf("File name is not valid \n");
+							IncreaseProgramCounter();
+							machine->WriteRegister(2,-1); // trả về lỗi cho chương
+							// trình người dùng
+							delete filename;
+							return;
+						}
 						DEBUG('a',"\n Finish reading filename.");
 						//DEBUG(‘a’,"\n File name : '"<<filename<<"'");
 						// Create file with size = 0
@@ -224,21 +233,22 @@ ExceptionHandler(ExceptionType which)
 						// hành Linux, chúng ta không quản ly trực tiếp các block trên
 						// đĩa cứng cấp phát cho file, việc quản ly các block của file
 						// trên ổ đĩa là một đồ án khác
-						IncreaseProgramCounter();
+						
 						switch(fileSystem->Create(filename, 0)) {
 							case -1: 
-								printf("Create file %s fail \n", filename);
+								//printf("Create file %s fail \n", filename);
 								machine->WriteRegister(2, -1);
 								break;
 							case 0: 
-								printf("File is already exist \n");
+								//printf("File is already exist \n");
 								machine->WriteRegister(2, 0);
 								break;
 							case 1:
-								printf("Create %s successfully \n", filename);
+								//printf("Create %s successfully \n", filename);
 								machine->WriteRegister(2, 1);
 								break;
 						}
+						IncreaseProgramCounter();
 						delete filename;
 						return;
 					 }
@@ -267,7 +277,6 @@ ExceptionHandler(ExceptionType which)
 							return;
 						}
 
-						//Kiem tra so luong tham so dau vao
 
 						if (filename == NULL)
 						{
@@ -279,6 +288,15 @@ ExceptionHandler(ExceptionType which)
 							delete filename;
 							return;
 						}
+
+						if (filename[0] == '\0') {
+							printf("File name is not valid \n");
+							IncreaseProgramCounter();
+							machine->WriteRegister(2,-1); 
+							delete filename;
+							return;
+						}			
+
 						DEBUG('a',"\n Finish reading filename.");
 						//DEBUG(‘a’,"\n File name : '"<<filename<<"'");
 						// Open file
@@ -294,7 +312,7 @@ ExceptionHandler(ExceptionType which)
 							}
 							//Neu file va type hop le, tien hanh ghi file vao bang dac ta
 							fileSystem->files[0] = fileSystem->Open(filename, openType);
-							printf("Open %s successfully \n", filename);
+							//printf("Open %s successfully \n", filename);
 							IncreaseProgramCounter();
 							machine->WriteRegister(2, 0);	
 							delete filename;	
@@ -309,7 +327,7 @@ ExceptionHandler(ExceptionType which)
 							}
 							//Neu file va type hop le, tien hanh ghi file vao bang dac ta
 							fileSystem->files[1] = fileSystem->Open(filename, openType);
-							printf("Open %s successfully \n", filename);
+							//printf("Open %s successfully \n", filename);
 							IncreaseProgramCounter();
 							machine->WriteRegister(2, 1);
 							delete filename;
@@ -335,7 +353,7 @@ ExceptionHandler(ExceptionType which)
 							}	
 							else
 							//Neu thanh cong tra ve vi tri trong bang dac ta
-								printf("Open %s successfully \n", filename);
+								//printf("Open %s successfully \n", filename);
 								machine->WriteRegister(2, freeSlot);
 						}
 					
@@ -368,9 +386,9 @@ ExceptionHandler(ExceptionType which)
 						else {
 							//File dang duoc mo
 							//Xoa thong tin file khoi bang dac ta
+							//printf("Close successfully \n");
 							delete fileSystem->files[openFileID];
-							fileSystem->files[openFileID] = NULL;
-							printf("Close successfully \n");
+							fileSystem->files[openFileID] = NULL;					
 							machine->WriteRegister(2, openFileID);
 						}
 						return;
@@ -425,7 +443,7 @@ ExceptionHandler(ExceptionType which)
 						else {
 							//Doc file
 							int bytes = fileSystem->files[id]->Read(temp, charCount);
-							printf("Read file successfully \n");
+							//printf("Read file successfully \n");
 							//Chua o cuoi file
 							if (bytes > 0) {
 								//Lay du lieu tu kernel space
@@ -492,7 +510,7 @@ ExceptionHandler(ExceptionType which)
 						//File
 						else {
 							int bytes = fileSystem->files[id]->Write(temp, charCount);
-							printf("Write file successfully \n");
+							//printf("Write file successfully \n");
 							machine->WriteRegister(2, bytes);					
 						}
 
@@ -547,17 +565,15 @@ ExceptionHandler(ExceptionType which)
 
 					case SC_Delete: {
 						int virtAddr = machine->ReadRegister(4);
-						char* filename;
-						int fileID;
-						int i;
-						int index = 0;
-						int openingFiles[8];
+						char* filename = NULL;
+						int i, fileID;
 
 						filename = User2System(virtAddr,MaxFileLength+1);
 						if (filename == NULL || filename[0] == '\0') {
 							printf("File name is not valid \n");
 							IncreaseProgramCounter();
 							machine->WriteRegister(2, -1);
+							delete filename;
 							return;
 						}
 
@@ -565,20 +581,46 @@ ExceptionHandler(ExceptionType which)
 							printf("Cannot delete stdin, stdout \n");
 							IncreaseProgramCounter();
 							machine->WriteRegister(2, -1);
+							delete filename;
 							return;
 						}
 
 						for (i = 2; i < 10; i++) {
-							if (fileSystem->files[i] != NULL) 
-								openingFiles[index++] = i;
+							if (fileSystem->files[i] != NULL && strcmp(filename, fileSystem->files[i]->name) == 0) {
+								printf("File %s is opening \n", filename);
+								IncreaseProgramCounter();
+								machine->WriteRegister(2, -1);
+								delete filename;
+								return;
+							}
 						}
 
-						fileID = openForReadWrite(filename, false);
-
-						for (i = 0; i < index; i++) {
-
+						fileID = OpenForReadWrite(filename, false);
+						
+						if (fileID == -1) {
+							printf("File %s is not exist \n", filename);
+							IncreaseProgramCounter();
+							machine->WriteRegister(2, -1);
+							delete filename;
+							return;
 						}
 
+						Close(fileID);
+
+						if (fileSystem->Remove(filename)) {
+							//printf("Delete file %s successfully \n", filename);
+							IncreaseProgramCounter();
+							machine->WriteRegister(2, -1);
+							delete filename;
+							return;
+						}
+						else {
+							//printf("Delete file %s failed \n", filename);
+							IncreaseProgramCounter();
+							machine->WriteRegister(2, -1);
+							delete filename;
+							return;
+						}
 						
 					}
 					 default: {

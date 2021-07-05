@@ -50,6 +50,7 @@ OpenFile::OpenFile(int sector, int type)
 
  OpenFile::~OpenFile()
 {
+    delete name;
     delete hdr;
 } 
 

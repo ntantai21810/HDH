@@ -66,9 +66,9 @@ class OpenFile {
         int length = 0;
         for (; i < numBytes; i++)
             if (from[i] != '\0') length++;
-		numWritten = WriteAt(from, length, currentOffset); 
-		currentOffset += numWritten;
-		return numWritten;
+				numWritten = WriteAt(from, length, currentOffset); 
+				currentOffset += numWritten;
+				return numWritten;
 		}
 
     int Length() { Lseek(file, 0, 2); return Tell(file); }

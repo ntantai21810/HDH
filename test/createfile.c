@@ -24,7 +24,8 @@ main()
 	}
 	else  {
 		Write("Fail \n", maxlen, 1);
-	}
+	} 
+
 	
 	Close(stdinID);
 	Close(stdoutID);

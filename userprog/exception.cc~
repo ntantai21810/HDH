@@ -139,6 +139,7 @@ ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
 		int MaxFileLength = 32;
+		int MaxNumLen = 10;
 
     switch (which) {
 			case NoException:
@@ -320,7 +321,7 @@ ExceptionHandler(ExceptionType which)
 						}
 						else if (strcmp(filename, "stdout") == 0) {
 							if (openType == 1) {
-								printf("sdtin type must be 0 \n");
+								printf("sdtout type must be 0 \n");
 								IncreaseProgramCounter();
 								machine->WriteRegister(2, -1);
 								return;
@@ -409,6 +410,13 @@ ExceptionHandler(ExceptionType which)
 								return;
 						}
 
+						if (charCount < 0) {
+							printf("Charcount is not valid \n");
+							IncreaseProgramCounter();
+							machine->WriteRegister(2, -1);
+							return;
+						}
+
 						//Kiem tra file dang mo
 						if (fileSystem->files[id] == NULL) {
 							printf("File isn't opened \n");
@@ -474,6 +482,13 @@ ExceptionHandler(ExceptionType which)
 								return;
 						}
 
+						if (charCount < 0 && charCount != -1) {
+							printf("Charcount is not valid \n");
+							IncreaseProgramCounter();
+							machine->WriteRegister(2, -1);
+							return;
+						}
+
 						//Kiem tra file dang mo
 						if (fileSystem->files[id] == NULL) {
 							printf("File is not opened \n");
@@ -504,12 +519,20 @@ ExceptionHandler(ExceptionType which)
 
 						//Stdout
 						if (id == 1) {
-							int bytes = gSynchConsole->Write(temp, charCount);
+							int bytes;
+							if (charCount == -1) {
+								bytes = gSynchConsole->Write(intToChar(buffer), 10);
+							}
+							else bytes = gSynchConsole->Write(temp, charCount);
 							machine->WriteRegister(2, bytes);
 						}
 						//File
 						else {
-							int bytes = fileSystem->files[id]->Write(temp, charCount);
+							int bytes;
+							if (charCount == -1) {
+								bytes = fileSystem->files[id]->Write(intToChar(buffer), 10);
+							}
+							else bytes = fileSystem->files[id]->Write(temp, charCount);
 							//printf("Write file successfully \n");
 							machine->WriteRegister(2, bytes);					
 						}
@@ -610,7 +633,7 @@ ExceptionHandler(ExceptionType which)
 						if (fileSystem->Remove(filename)) {
 							//printf("Delete file %s successfully \n", filename);
 							IncreaseProgramCounter();
-							machine->WriteRegister(2, -1);
+							machine->WriteRegister(2, 0);
 							delete filename;
 							return;
 						}

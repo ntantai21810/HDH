@@ -6,7 +6,6 @@ main()
 {
 	char filename[maxlen +1];
 	int stdinID, stdoutID;
-	int status;
 
 	stdinID = Open("stdin", 1);
 	stdoutID = Open("stdout", 0);

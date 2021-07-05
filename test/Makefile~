@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult sort createfile echo cat copy delete
+all: halt shell matmult sort createfile echo cat copy delete Ping Pong scheduler
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -90,3 +90,13 @@ delete.o: delete.c
 delete: delete.o start.o
 	$(LD) $(LDFLAGS) start.o delete.o -o delete.coff
 	../bin/coff2noff delete.coff delete
+Ping.o: Ping.c
+	$(CC) $(CFLAGS) -c Ping.c
+Ping: Ping.o start.o
+	$(LD) $(LDFLAGS) start.o Ping.o -o Ping.coff
+	../bin/coff2noff Ping.coff Ping
+Pong.o: Pong.c
+	$(CC) $(CFLAGS) -c Pong.c
+Pong: Pong.o start.o
+	$(LD) $(LDFLAGS) start.o Pong.o -o Pong.coff
+	../bin/coff2noff Pong.coff Pong

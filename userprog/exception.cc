@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "progtest.h"
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -139,7 +140,6 @@ ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
 		int MaxFileLength = 32;
-		int MaxNumLen = 10;
 
     switch (which) {
 			case NoException:
@@ -645,6 +645,47 @@ ExceptionHandler(ExceptionType which)
 							return;
 						}
 						
+					}
+
+					case SC_Exec: {
+						int id = -1, i;
+						int virtAddr = machine->ReadRegister(4);
+						char* filename = NULL;
+						Thread *myThread;
+
+						filename = User2System(virtAddr,MaxFileLength+1);
+
+						if (filename == NULL) {
+							printf("Not enough memory in system \n");
+							IncreaseProgramCounter();
+							machine->WriteRegister(2, -1);
+							return;
+						}
+
+						for (i = 0; i < NumPhysPages; i++) {
+							if (names[i] == NULL) {
+								id = i;
+								break;
+							}
+						}
+			
+						if (id == -1) {
+							printf("Memory is full \n");
+							IncreaseProgramCounter();
+							machine->WriteRegister(2, -1);
+							return;
+						}
+
+						names[id] = filename;
+
+						myThread = new Thread(filename);
+						myThread->Fork(StartProcessOverload, id);
+
+						IncreaseProgramCounter();
+						machine->WriteRegister(2, id);
+
+						return;
+
 					}
 					 default: {
 						printf("\n Unexpected user mode exception (%d %d)", which,

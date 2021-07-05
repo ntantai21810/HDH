@@ -19,6 +19,8 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
 SynchConsole *gSynchConsole;
+BitMap* gFrames;
+char* names[NumPhysPages] = { NULL };
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -152,6 +154,7 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
     gSynchConsole = new SynchConsole();
+    gFrames = new BitMap(NumPhysPages);
 #endif
 
 #ifdef FILESYS

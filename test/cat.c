@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "copyright.h"
+#include "progtest.h"
 #define maxlen 32
 
 int
@@ -25,7 +26,6 @@ main()
 		Write(content, fileLen, stdoutID);
 		Close(fileID);
 	}
-	
 
 	Close(stdinID);
 	Close(stdoutID);

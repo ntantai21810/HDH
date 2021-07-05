@@ -1,0 +1,5 @@
+void
+StartProcess(char *filename);
+
+void
+StartProcessOverLoad(int id);

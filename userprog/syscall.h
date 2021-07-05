@@ -30,6 +30,8 @@
 #define SC_Fork		9
 #define SC_Yield	10
 #define SC_CreateFile	11
+#define SC_Seek 	12
+#define SC_Delete	13
 
 #ifndef IN_ASM
 
@@ -93,7 +95,7 @@ int CreateFile(char *name);
 /* Open the Nachos file "name", and return an "OpenFileId" that can 
  * be used to read and write to the file.
  */
-OpenFileId Open(char *name);
+OpenFileId Open(char *name, int type);
 
 /* Write "size" bytes from "buffer" to the open file. */
 void Write(char *buffer, int size, OpenFileId id);
@@ -108,8 +110,8 @@ int Read(char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileId id);
-
-
+int Seek(int pos);
+int Delete(char* name);
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program. 

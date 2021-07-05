@@ -28,15 +28,29 @@
 					// See definitions listed under #else
 class OpenFile {
   public:
-    OpenFile(int f) { file = f; currentOffset = 0; }	// open the file
+    int openType;
+    /* 
+         openType:
+        - 0: read and write
+        - 1: read only
+    */
+    OpenFile(int f) { file = f; currentOffset = 0; openType = -1;}	// open the file
+    //Overload constructor
+    OpenFile(int f, int type) { file = f; currentOffset = 0; openType = type;}
+    //Overlaod constructor
+    OpenFile() {
+        file = -1;
+        currentOffset = 0;
+        openType = -1;
+    };
     ~OpenFile() { Close(file); }			// close the file
 
     int ReadAt(char *into, int numBytes, int position) { 
-    		Lseek(file, position, 0); 
+    	Lseek(file, position, 0); 
 		return ReadPartial(file, into, numBytes); 
 		}	
     int WriteAt(char *from, int numBytes, int position) { 
-    		Lseek(file, position, 0); 
+    	Lseek(file, position, 0); 
 		WriteFile(file, from, numBytes); 
 		return numBytes;
 		}	
@@ -46,12 +60,31 @@ class OpenFile {
 		return numRead;
     		}
     int Write(char *from, int numBytes) {
-		int numWritten = WriteAt(from, numBytes, currentOffset); 
+        int i = 0;
+        int numWritten;
+        int length = 0;
+        for (; i < numBytes; i++)
+            if (from[i] != '\0') length++;
+		numWritten = WriteAt(from, length, currentOffset); 
 		currentOffset += numWritten;
 		return numWritten;
 		}
 
     int Length() { Lseek(file, 0, 2); return Tell(file); }
+
+    int Seek(int pos) { 
+        Lseek(file, pos, 0); 
+        currentOffset = Tell(file);
+        return Tell(file); 
+    }
+
+    int getCurrentOffSet() {
+        return currentOffset;
+    }
+
+    int getFileID() {
+        return file;
+    }
     
   private:
     int file;
@@ -63,8 +96,16 @@ class FileHeader;
 
 class OpenFile {
   public:
+    int openType;
+    /* 
+        openType:
+        - 0: read and write
+        - 1: read only
+    */
     OpenFile(int sector);		// Open a file whose header is located
 					// at "sector" on the disk
+    //Overload constructor
+    OpenFile(int sector, int type);
     ~OpenFile();			// Close the file
 
     void Seek(int position); 		// Set the position from which to 
@@ -85,6 +126,11 @@ class OpenFile {
 					// file (this interface is simpler 
 					// than the UNIX idiom -- lseek to 
 					// end of file, tell, lseek back 
+    int getCurrentOffSet() {
+        return seekPosition;
+    }
+
+    int getFileID() {}
     
   private:
     FileHeader *hdr;			// Header for this file 
